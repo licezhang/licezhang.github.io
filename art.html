@@ -8,6 +8,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>alice's website</title>
+  <link rel="icon" type="image/png" href="assets/img/icon.png" />
+  
+  <!-- Preload favicon for all pages -->
+  <link rel="preload" as="image" href="assets/img/icon.png">
+  
+  <!-- Preload critical carousel images -->
+  <link rel="preload" as="image" href="assets/img/postcards/postcard1.JPG">
+  <link rel="preload" as="image" href="assets/img/felting/felting2.jpg">
+  <link rel="preload" as="image" href="assets/img/photos/photo2.jpg">
+  
   <link rel="stylesheet" href="styles.css" />
 
   <style>
@@ -261,6 +271,7 @@
         this.data = data;
         this.currentSlide = 0;
         this.totalSlides = data.length;
+        this.preloadedImages = new Map(); // Cache for preloaded images
         
         // Get elements within this carousel
         this.prevBtn = container.querySelector('.carousel-prev');
@@ -272,6 +283,9 @@
       }
       
       init() {
+        // Preload all images
+        this.preloadImages();
+        
         // Bind event listeners
         this.prevBtn.addEventListener('click', () => this.prevSlide());
         this.nextBtn.addEventListener('click', () => this.nextSlide());
@@ -280,9 +294,35 @@
         this.updateCarousel();
       }
       
+      // Preload all images for smooth transitions
+      preloadImages() {
+        this.data.forEach((item, index) => {
+          const img = new Image();
+          img.onload = () => {
+            this.preloadedImages.set(item.image, img);
+            // If this is the first image, show it immediately
+            if (index === 0) {
+              this.updateCarousel();
+            }
+          };
+          img.onerror = () => {
+            console.warn(`Failed to preload image: ${item.image}`);
+          };
+          img.src = item.image;
+        });
+      }
+      
       updateCarousel() {
         const currentItem = this.data[this.currentSlide];
-        this.image.src = currentItem.image;
+        
+        // Use preloaded image if available, otherwise fall back to direct src
+        const preloadedImg = this.preloadedImages.get(currentItem.image);
+        if (preloadedImg) {
+          this.image.src = preloadedImg.src;
+        } else {
+          this.image.src = currentItem.image;
+        }
+        
         this.image.alt = currentItem.description;
         this.textElement.textContent = currentItem.description;
       }
