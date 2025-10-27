@@ -1,0 +1,99 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Avenir Light', sans-serif;
+    background-color: #f7f7f7; /* light beige */
+    color: #757575;
+    height: 100vh;
+    overflow: hidden;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    font-family: 'Avenir bold', sans-serif;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 40px 80px;
+    box-sizing: border-box;
+}
+
+.email-icon {
+    margin-bottom:5px;
+    width:23px;
+    vertical-align:middle;
+}
+
+.link {
+    text-decoration: underline;
+}
+
+nav a {
+    margin-left: 30px;
+    transition: color 0.2s ease;
+}
+
+a {
+    color: #4f504b;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #757575;
+}
+
+main {
+    max-width: 750px;
+    margin: 0 auto;
+    padding: 0 20px;
+    margin-top: 120px; /* Reasonable margin below fixed header */
+    box-sizing: border-box;
+}
+
+span{
+    font-size: 1.05rem;
+    font-family: "Averia Sans Libre", sans-serif;
+}
+
+.highlight1 {
+    color: #F5840C;
+}
+.highlight2 {
+    color: #FC4A4A;
+}
+.highlight3 {
+    color: #DA356E;
+}
+.highlight4 {
+    color: #9C3BCC;
+}
+.highlight5 {
+    color: #6B6BE2;
+}
+.highlight6 {
+    color: #7D8921;
+}
+.highlight7 {
+    color: #316C0F;
+}
+
+h1 {
+    font-size: 1.8rem;
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom:0px;
+    color: #5b5c4e;
+}
+
+.fruit-word {
+    cursor:pointer;
+    pointer-events:auto; /* words should receive clicks even though canvas covers page */
+}
+
+#stage { position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; display:block; }
+.content { padding:36px; max-width:900px; margin:0 auto; line-height:1.7; position:relative; z-index:1; }

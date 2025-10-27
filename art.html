@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>alice's website</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <style>
+    body {
+      overflow: auto !important; /* Enable scrolling on art page */
+    }
+
+    /* Hide side nav on smaller screens */
+    @media (max-width: 1000px) {
+      .side-nav {
+        display: none;
+      }
+    }
+
+    /* Make header take up space on small screens */
+    @media (max-width: 1200px) {
+      header {
+        position: static !important; /* Override fixed positioning */
+        padding: 40px
+      }
+      
+      main {
+        margin-top: 0 !important; /* Remove top margin since header takes space */
+      }
+
+      main > div:first-child h1 {
+        margin-top: 17.5px !important; /* Remove top margin since header takes space */
+      }
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    main {
+      max-width: 500px;
+    }
+
+    .carousel-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    
+    .carousel-slide {
+      width: 100%;
+      max-width: 100%;
+      position: relative;
+      aspect-ratio: 6/4; 
+      overflow: hidden;
+    }
+
+    .carousel-slide.vertical {
+        aspect-ratio: 3/4;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover; 
+      object-position: center; 
+      border-radius: 4px;
+    }
+
+    .carousel-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      width: 45px;
+      height: 80px;
+      cursor: pointer;
+      font-size: 25px;
+      color: #5b5c4e;
+      background:none;
+    }
+
+    .carousel-prev {
+      left: -50px;
+    }
+
+    .carousel-next {
+      right: -50px; 
+    }
+
+    .carousel-text {
+      text-align: right;
+      margin-top: 5px;
+      margin-bottom:20px;
+      font-size: 0.9rem;
+      color: #666;
+      font-style: italic;
+    }
+
+    .art-description {
+      text-align: center;
+      margin-top:10px;
+    }
+
+    img {
+        width: 100%;
+        height: auto;
+        border-radius: 4px;
+    }
+
+  </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo"><a href="index.html">Alice Zhang</a></div>
+        <nav>
+        <a href="art.html">Art</a>  <a href="work.html">Work</a>  <a href="mailto:alice.zhang@psy.ox.ac.uk"><img src="assets/img/email.png" alt="Email" class="email-icon"></a>
+        </nav>
+    </header>
+
+  <main>  
+    <div id="postcards">
+        <h1>Postcards</h1>  
+        <p class="art-description">A series of en plein air postcards from my travels.</br> Made with acrylic paint pens, color pencil, pencil, and pen.</p>
+        <div class="carousel-container" data-carousel="postcards">
+            <button class="carousel-nav carousel-prev">‹</button>
+            <div class="carousel-slide">
+                <img class="carousel-image" src="" alt="">
+            </div>
+            <button class="carousel-nav carousel-next">›</button>
+        </div>
+        <p class="carousel-text"></p>
+    </div>
+    <div id="illustration">
+        <h1>Illustration</h1>  
+        <p class="art-description">Digital drawings made with Procreate.</p>
+        <img src="assets/img/illustrations/illustration1.png" alt="illustration1" />
+        <p class="carousel-text">For long distance friends who love the moon (2023)</p>
+        <img src="assets/img/illustrations/illustration2.png" alt="illustration2" />
+        <p class="carousel-text">Halloween figure drawing (2024)</p>
+    </div>
+    <div id="felting">
+        <h1>Felting adventures</h1>  
+        <p class="art-description">Making wearable items out of wool roving. </br> Using needle felting and wet felting techniques.</p>
+        <div class="carousel-container" data-carousel="felting">
+            <button class="carousel-nav carousel-prev">‹</button>
+            <div class="carousel-slide vertical">
+                <img class="carousel-image" src="" alt="">
+            </div>
+            <button class="carousel-nav carousel-next">›</button>
+        </div>
+        <p class="carousel-text"></p>
+    </div>
+    <div id="photos">
+        <h1>Film photos</h1>  
+        <p class="art-description">I shoot on a Pentax K1000 and sometimes do darkroom stuff.</p>
+        <div class="carousel-container" data-carousel="photos">
+            <button class="carousel-nav carousel-prev">‹</button>
+            <div class="carousel-slide">
+                <img class="carousel-image" src="" alt="">
+            </div>
+            <button class="carousel-nav carousel-next">›</button>
+        </div>
+        <p class="carousel-text"></p>
+    </div>
+    <div id="painting">
+        <h1>Painting</h1>  
+        <p class="art-description">Acrylic painting my first love <3.</p>
+        <img src="assets/img/painting/painting1.jpg" alt="painting1" />
+        <p class="carousel-text">Up late in Central Square (2021)</p>
+    </div>
+  </main>
+
+  <script>
+    // Carousel data
+    const carouselData = {
+      postcards: [
+        {
+          image: "assets/img/postcards/postcard1.JPG",
+          description: "Oeschinensee Lake, Switzerland (2023)"
+        },
+        {
+          image: "assets/img/postcards/postcard2.JPG",
+          description: "Tenryu-Ji Temple, Kyoto (2023)"
+        },
+        {
+          image: "assets/img/postcards/postcard3.JPG",
+          description: "Views from Glecksteinhütte (2023)"
+        },
+        {
+          image: "assets/img/postcards/postcard4.JPG",
+          description: "Ha Giang (2024)"
+        },
+        {
+          image: "assets/img/postcards/postcard5.JPG",
+          description: "The Man (2024)"
+        },
+        {
+          image: "assets/img/postcards/postcard6.JPG",
+          description: "Somerville college gardens (2025)"
+        }
+      ],
+      felting: [
+        {
+          image: "assets/img/felting/felting2.jpg",
+          description: "Needle felted fish earrings (2025)"
+        },
+        {
+          image: "assets/img/felting/felting1.jpg",
+          description: "Cozy house slippers inspired by Felicia Chao (2025)"
+        },
+        {
+          image: "assets/img/felting/felting3.JPG",
+          description: "Dai Bo (from Scissor Seven) sauna hat (2025)"
+        },
+        {
+          image: "assets/img/felting/felting4.jpg",
+          description: "Needle felted watermelon earrings (2025)"
+        }
+      ],
+      photos: [
+        {
+          image: "assets/img/photos/photo2.jpg",
+          description: "MIT student center (2020) / Kodak Gold 200"
+        },
+        {
+          image: "assets/img/photos/photo1.jpg",
+          description: "Cambridge, MA (2020) / Kodak Ultramax 400"
+        },
+        {
+          image: "assets/img/photos/photo3.jpg",
+          description: "Saint Lucia (2022) / Kodak Gold 200"
+        },
+        {
+          image: "assets/img/photos/photo5.jpg",
+          description: "Banff (2023) / Portra 400"
+        },
+        {
+          image: "assets/img/photos/photo6.jpg",
+          description: "Gowanus-core (2022) / Ilford HP5+"
+        },
+        {
+          image: "assets/img/photos/photo8.jpg",
+          description: "Gowanus-core (2023) / Portra 400"
+        }
+      ]
+    };
+
+    // Reusable Carousel Class
+    class Carousel {
+      constructor(container, data) {
+        this.container = container;
+        this.data = data;
+        this.currentSlide = 0;
+        this.totalSlides = data.length;
+        
+        // Get elements within this carousel
+        this.prevBtn = container.querySelector('.carousel-prev');
+        this.nextBtn = container.querySelector('.carousel-next');
+        this.image = container.querySelector('.carousel-image');
+        this.textElement = container.parentElement.querySelector('.carousel-text');
+        
+        this.init();
+      }
+      
+      init() {
+        // Bind event listeners
+        this.prevBtn.addEventListener('click', () => this.prevSlide());
+        this.nextBtn.addEventListener('click', () => this.nextSlide());
+        
+        // Set initial content
+        this.updateCarousel();
+      }
+      
+      updateCarousel() {
+        const currentItem = this.data[this.currentSlide];
+        this.image.src = currentItem.image;
+        this.image.alt = currentItem.description;
+        this.textElement.textContent = currentItem.description;
+      }
+      
+      nextSlide() {
+        this.currentSlide = (this.currentSlide + 1) % this.totalSlides;
+        this.updateCarousel();
+      }
+      
+      prevSlide() {
+        this.currentSlide = (this.currentSlide - 1 + this.totalSlides) % this.totalSlides;
+        this.updateCarousel();
+      }
+      
+      // Check if this carousel is currently visible on screen
+      isInViewport() {
+        const rect = this.container.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        const windowWidth = window.innerWidth;
+        
+        return (
+          rect.top < windowHeight * 0.8 && 
+          rect.bottom > windowHeight * 0.2 &&
+          rect.left < windowWidth &&
+          rect.right > 0
+        );
+      }
+    }
+
+    // Store carousel instances
+    let carousels = [];
+
+    // Initialize all carousels
+    document.addEventListener('DOMContentLoaded', () => {
+      const carouselContainers = document.querySelectorAll('[data-carousel]');
+      
+      carouselContainers.forEach(container => {
+        const carouselType = container.dataset.carousel;
+        const data = carouselData[carouselType];
+        
+        if (data) {
+          const carousel = new Carousel(container, data);
+          carousels.push(carousel);
+        }
+      });
+      
+      // Initialize side navigation
+      initSideNavigation();
+      
+      // Global keyboard navigation - affects only the visible carousel
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          // Find the carousel that's most visible on screen
+          const visibleCarousel = carousels.find(carousel => carousel.isInViewport());
+          
+          if (visibleCarousel) {
+            if (e.key === 'ArrowLeft') {
+              visibleCarousel.prevSlide();
+            } else if (e.key === 'ArrowRight') {
+              visibleCarousel.nextSlide();
+            }
+          }
+        }
+      });
+    });
+
+    // Side Navigation Functionality
+    function initSideNavigation() {
+      const navLinks = document.querySelectorAll('.nav-link');
+      const sections = document.querySelectorAll('main > div[id]');
+      
+      // Update active nav item based on scroll position
+      function updateActiveNav() {
+        let currentSection = '';
+        const scrollPosition = window.scrollY + 100; // Offset for better detection
+        
+        sections.forEach(section => {
+          const sectionTop = section.offsetTop;
+          const sectionHeight = section.offsetHeight;
+          
+          if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+            currentSection = section.getAttribute('id');
+          }
+        });
+        
+        // Update active class
+        navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${currentSection}`) {
+            link.classList.add('active');
+          }
+        });
+      }
+      
+      // Listen for scroll events
+      window.addEventListener('scroll', updateActiveNav);
+      
+      // Set initial active state
+      updateActiveNav();
+    }
+  </script>
+</body>
+</html>

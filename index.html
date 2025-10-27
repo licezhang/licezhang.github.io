@@ -1,3 +1,196 @@
-<html>
-  Hello World
+<!doctype html>
+<html lang="en">
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
+  
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>alice's website</title>
+  <link rel="icon" type="image/png" href="assets/img/icon.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header>
+    <div class="logo"><a href="index.html">Alice Zhang</a></div>
+    <nav>
+        <a href="art.html">Art</a>  <a href="work.html">Work</a>  <a href="mailto:alice.zhang@psy.ox.ac.uk"><img src="assets/img/email.png" alt="Email" class="email-icon"></a>
+    </nav>
+  </header>
+  <main style="height:100%">
+    <div>
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="assets/img/me.png" alt="Alice" style="width:190px; border-radius:10px; display:block; margin:0 auto;"/>
+    </div>
+    <p>
+      Hi, I'm <span class="highlight4 fruit-word" data-fruit="apple">Alice</span>. I'm interested in how technology (broadly defined) can help us <span class="highlight2">be together</span> in the world. I'm interested in questions like:
+      <ul>
+        <li>How can large groups of people communicate effectively and make good decisions together?</li>
+        <li>What would social media look like if it were designed to produce meaningful, in-person interactions?</li>
+      </ul>
+      I'm a <span class="highlight5">PhD student at Oxford</span>, where I work on <span class="highlight3">LLM-based tools</span> to help groups of people find agreement on controversial topics.
+      Before this, I did <span class="highlight1">cognitive science research</span> on learning and decision-making at NYU.
+      I studied <span class="highlight6">computation and cognition at MIT</span>, and was briefly a software engineer at Flatiron Health.
+      <br/><br/>
+      I like to make <a href="art.html"><span class="highlight6 link">art</span></a> and <a href="tea.html"><span class="highlight7 link">drink tea</span></a>. 
+    </p>
+    </div>
+  </main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+
+<script>
+  (function () {
+    // Matter aliases for convenience
+    const { Engine, Render, Runner, Bodies, Body, Composite } = Matter;
+
+    // ----------------------
+    // Engine & renderer
+    // ----------------------
+    // enableSleeping: true (original/simple behavior)
+    const engine = Engine.create();
+    engine.world.gravity.y = 1.1; // gravity strength (tweak to taste)
+    const canvas = document.getElementById('stage');
+
+    // Create the renderer (full-screen canvas). We keep one Render instance.
+    const render = Render.create({
+      canvas: canvas,
+      engine: engine,
+      options: {
+        width: window.innerWidth,
+        height: window.innerHeight,
+        background: 'transparent',
+        wireframes: false,
+        pixelRatio: window.devicePixelRatio || 1
+      }
+    });
+    Render.run(render);
+
+    // Runner
+    const runner = Runner.create();
+    Runner.run(runner, engine);
+
+    // Invisible bounds (floor + left/right walls)
+    const worldBounds = Matter.Bounds.create([
+        { x: 0, y: 0 },
+        { x: window.innerWidth, y: 0 },
+        { x: window.innerWidth, y: window.innerHeight },
+        { x: 0, y: window.innerHeight }
+    ]);
+
+    const thickness = 200;
+    const { min, max } = worldBounds;
+
+    const floor = Bodies.rectangle(
+        (min.x + max.x) / 2, max.y + thickness / 2,
+        max.x - min.x + thickness * 2, thickness,
+        { isStatic: true, render: { visible: false } }
+    );
+
+    Composite.add(engine.world, floor);
+    
+    // ----------------------
+    // Fruit definitions
+    // Keep these small and easy to tweak.
+    // ----------------------
+    const FRUITS = {
+      apple: {
+        type: 'circle',
+        radius: 20,
+        options: { density: 0.002, friction: 0.6, restitution: 0.1, render: { fillStyle: '#e53935' } }
+      },
+      orange: {
+        type: 'circle',
+        radius: 18,
+        options: { density: 0.002, friction: 0.55, restitution: 0.15, render: { fillStyle: '#fb8c00' } }
+      },
+      pear: {
+        type: 'polygon',
+        // simple vertex shape approximating a pear
+        vertices: [{x:-14,y:-18},{x:14,y:-18},{x:22,y:0},{x:8,y:24},{x:-8,y:24},{x:-22,y:0}],
+        options: { density: 0.002, friction: 0.6, restitution: 0.08, render: { fillStyle: '#8bc34a' } }
+      },
+      banana: {
+        type: 'polygon',
+        // convex-ish banana approximation
+        vertices: [{x:-26,y:-6},{x:-18,y:-14},{x:-6,y:-20},{x:6,y:-18},{x:18,y:-10},{x:22,y:0},{x:12,y:8},{x:-6,y:12},{x:-20,y:8}],
+        options: { density: 0.0018, friction: 0.5, restitution: 0.12, render: { fillStyle: '#ffeb3b' } }
+      }
+    };
+
+    let nextId = 1; // unique id for labeling bodies
+    function createFruitBody(kind) {
+      const spec = FRUITS[kind]
+      let body;
+
+      if (spec.type === 'circle') {
+        body = Bodies.circle(-100, -100, spec.radius, Object.assign({}, spec.options));
+      } else if (spec.type === 'polygon') {
+        // Matter.fromVertices will attempt to create a compound if needed
+        const verts = spec.vertices.map(v => ({ x: v.x, y: v.y }));
+        body = Bodies.fromVertices(-100, -100, verts, Object.assign({}, spec.options), true);
+        // fallback to rectangle if fromVertices fails
+        if (!body) {
+          body = Bodies.rectangle(-100, -100, 40, 40, Object.assign({}, spec.options));
+        }
+      } else {
+        body = Bodies.circle(-100, -100, 20, Object.assign({}, spec.options));
+      }
+
+      body.label = `fruit-${kind}-${nextId++}`;
+      body.customKind = kind;
+      body.render.strokeStyle = '#333';
+      body.render.lineWidth = 1;
+      // mark so we can identify fruit bodies later if needed
+      body.isFruit = true;
+      return body;
+    }
+
+    function spawnFruit(kind, screenX) {
+      const body = createFruitBody(kind);
+
+      // place above the top of the viewport with a small random offset
+      const spawnX = Math.max(20, Math.min(window.innerWidth - 20, screenX + (Math.random() - 0.5) * 40));
+      const spawnY = -40 - Math.random() * 60;
+      Body.setPosition(body, { x: spawnX, y: spawnY });
+
+      // small lateral velocity + angular velocity
+      Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0});
+      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.6);
+
+      // small random force nudge so newly created bodies don't perfectly overlap
+      const push = 0.0006 + Math.random() * 0.0006;
+      Body.applyForce(body, { x: spawnX, y: spawnY }, { x: (Math.random() - 0.5) * push, y: -push * 0.2 });
+
+      Composite.add(engine.world, body);
+      return body;
+    }
+
+    document.addEventListener('click', function (e) {
+        const el = e.target.closest('.fruit-word');
+        const kind = el.dataset.fruit || 'apple';
+        spawnFruit(kind, window.innerWidth / 2);
+    });
+
+
+    window.addEventListener('resize', () => { 
+        Matter.Bounds.update(worldBounds, [
+            { x: 0, y: 0 },
+            { x: window.innerWidth, y: 0 },
+            { x: window.innerWidth, y: window.innerHeight },
+            { x: 0, y: window.innerHeight }
+        ]);
+        const { min, max } = worldBounds;
+        Body.setPosition(floor, { x: (min.x + max.x) / 2, y: max.y + thickness / 2 });
+        Body.setPosition(leftWall, { x: min.x - thickness / 2, y: (min.y + max.y) / 2 });
+        Body.setPosition(rightWall, { x: max.x + thickness / 2, y: (min.y + max.y) / 2 });
+    });
+
+  })();
+</script>
+
+</body>
 </html>
