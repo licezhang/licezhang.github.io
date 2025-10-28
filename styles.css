@@ -4,7 +4,7 @@ body {
     font-family: 'Avenir Light', sans-serif;
     background-color: #f7f7f7; /* light beige */
     color: #757575;
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
 }
 
