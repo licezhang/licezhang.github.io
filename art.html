@@ -6,7 +6,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Averia+Sans+Libre:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
   
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
   <title>alice's website</title>
   <link rel="icon" type="image/png" href="assets/img/icon.png" />
   
@@ -63,6 +63,9 @@
       position: relative;
       aspect-ratio: 6/4; 
       overflow: hidden;
+      /* Disable double-tap zoom on the slide container */
+      touch-action: manipulation;
+      user-select: none;
     }
 
     .carousel-slide.vertical {
@@ -75,6 +78,11 @@
       object-fit: cover; 
       object-position: center; 
       border-radius: 4px;
+      /* Disable double-tap zoom and improve touch experience */
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
     }
 
     .carousel-nav {
@@ -99,14 +107,10 @@
     }
 
     /* Mobile carousel adjustments */
-    @media (max-width: 768px) {
+    @media (max-width: 500px) {
       .carousel-container {
         position: relative;
         /* Remove side margins to keep carousel centered */
-      }
-
-      .main {
-        width:95%;
       }
       
       .carousel-nav {
@@ -345,6 +349,9 @@
         this.prevBtn.addEventListener('click', () => this.prevSlide());
         this.nextBtn.addEventListener('click', () => this.nextSlide());
         
+        // Add touch/swipe support
+        this.setupSwipeSupport();
+        
         // Set initial content
         this.updateCarousel();
       }
@@ -413,6 +420,96 @@
           
           tempImg.src = currentItem.image;
         }
+      }
+      
+      // Setup touch/swipe support for mobile devices
+      setupSwipeSupport() {
+        let startX = 0;
+        let startY = 0;
+        let endX = 0;
+        let endY = 0;
+        let isPointerDown = false;
+        
+        const slideElement = this.container.querySelector('.carousel-slide');
+        
+        // Handle both touch and mouse events for broader compatibility
+        const startEvents = ['touchstart', 'mousedown'];
+        const moveEvents = ['touchmove', 'mousemove'];
+        const endEvents = ['touchend', 'mouseup'];
+        
+        // Start of touch/drag
+        startEvents.forEach(event => {
+          slideElement.addEventListener(event, (e) => {
+            isPointerDown = true;
+            const pointer = e.touches ? e.touches[0] : e;
+            startX = pointer.clientX;
+            startY = pointer.clientY;
+            
+            // Prevent default behavior for touch events to avoid scrolling
+            if (e.touches) {
+              e.preventDefault();
+            }
+          }, { passive: false });
+        });
+        
+        // During touch/drag movement
+        moveEvents.forEach(event => {
+          slideElement.addEventListener(event, (e) => {
+            if (!isPointerDown) return;
+            
+            const pointer = e.touches ? e.touches[0] : e;
+            endX = pointer.clientX;
+            endY = pointer.clientY;
+            
+            // Prevent default to avoid page scrolling during horizontal swipes
+            const deltaX = Math.abs(endX - startX);
+            const deltaY = Math.abs(endY - startY);
+            
+            if (deltaX > deltaY && e.touches) {
+              e.preventDefault();
+            }
+          }, { passive: false });
+        });
+        
+        // End of touch/drag
+        endEvents.forEach(event => {
+          slideElement.addEventListener(event, (e) => {
+            if (!isPointerDown) return;
+            isPointerDown = false;
+            
+            const deltaX = endX - startX;
+            const deltaY = endY - startY;
+            const absDeltaX = Math.abs(deltaX);
+            const absDeltaY = Math.abs(deltaY);
+            
+            // Only trigger swipe if horizontal movement is greater than vertical
+            // and the swipe distance is significant enough
+            if (absDeltaX > absDeltaY && absDeltaX > 50) {
+              if (deltaX > 0) {
+                // Swipe right - go to previous slide
+                this.prevSlide();
+              } else {
+                // Swipe left - go to next slide
+                this.nextSlide();
+              }
+            }
+            
+            // Reset values
+            startX = 0;
+            startY = 0;
+            endX = 0;
+            endY = 0;
+          });
+        });
+        
+        // Handle touch cancel events
+        slideElement.addEventListener('touchcancel', () => {
+          isPointerDown = false;
+          startX = 0;
+          startY = 0;
+          endX = 0;
+          endY = 0;
+        });
       }
       
       nextSlide() {
