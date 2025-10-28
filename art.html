@@ -36,7 +36,7 @@
     @media (max-width: 1200px) {
       header {
         position: static !important; /* Override fixed positioning */
-        padding: 40px
+        padding: 40px 80px;
       }
       
       main {
@@ -44,7 +44,7 @@
       }
 
       main > div:first-child h1 {
-        margin-top: 17.5px !important; /* Remove top margin since header takes space */
+        margin-top: 14.2px !important; /* Remove top margin since header takes space */
       }
     }
 
@@ -104,6 +104,19 @@
     .carousel-next {
       right: -50px; 
     }
+
+    /* Mobile carousel adjustments */
+    @media (max-width: 768px) {
+      .carousel-container {
+        position: relative;
+        /* Remove side margins to keep carousel centered */
+      }
+      
+      main{
+        max-width: 85%;
+      }
+    }
+
 
     .carousel-text {
       text-align: right;
