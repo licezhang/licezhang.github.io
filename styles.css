@@ -100,9 +100,9 @@ h1 {
 
 @media (max-width: 630px) {
     header {
-        padding: 20px 20px;
+        padding: 20px 20px !important;
         font-size: 1rem;
-        position: static !important;
+        position: relative !important;
     }
     main{
         margin-top: 0 !important;

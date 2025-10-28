@@ -25,13 +25,6 @@
       overflow: auto !important; /* Enable scrolling on art page */
     }
 
-    /* Hide side nav on smaller screens */
-    @media (max-width: 1000px) {
-      .side-nav {
-        display: none;
-      }
-    }
-
     /* Make header take up space on small screens */
     @media (max-width: 1200px) {
       header {
@@ -112,9 +105,16 @@
         /* Remove side margins to keep carousel centered */
       }
       
-      main{
-        max-width: 90%;
+      .carousel-nav {
+        width: 30px;
       }
+      .carousel-prev {
+      left: -30px;
+    }
+
+    .carousel-next {
+      right: -30px; 
+    }
     }
 
 
