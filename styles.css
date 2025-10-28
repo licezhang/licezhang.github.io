@@ -100,8 +100,12 @@ h1 {
 
 @media (max-width: 630px) {
     header {
-        padding: 20px 40px;
+        padding: 20px 20px;
         font-size: 1rem;
+        position: static !important;
+    }
+    main{
+        margin-top: 0 !important;
     }
     body{ overflow: auto !important; }
     nav a {
