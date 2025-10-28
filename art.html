@@ -110,11 +110,20 @@
       }
       .carousel-prev {
       left: -30px;
+
     }
 
     .carousel-next {
       right: -30px; 
     }
+
+    .carousel-text{
+        font-size: 0.8rem;
+    }
+
+    main > div:first-child h1 {
+        margin-top: 20px !important; /* Remove top margin since header takes space */
+      }
     }
 
 
@@ -136,6 +145,35 @@
         width: 100%;
         height: auto;
         border-radius: 4px;
+    }
+
+    /* Loading state styles */
+    .carousel-image {
+      transition: opacity 0.3s ease;
+    }
+
+    .carousel-text.loading {
+      color: #999;
+      font-style: italic;
+    }
+
+    .carousel-slide.loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #5b5c4e;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
   </style>
@@ -328,16 +366,49 @@
       updateCarousel() {
         const currentItem = this.data[this.currentSlide];
         
-        // Use preloaded image if available, otherwise fall back to direct src
+        // Use preloaded image if available
         const preloadedImg = this.preloadedImages.get(currentItem.image);
         if (preloadedImg) {
+          // Image is already loaded, update immediately
           this.image.src = preloadedImg.src;
+          this.image.alt = currentItem.description;
+          this.textElement.textContent = currentItem.description;
+          this.textElement.classList.remove('loading');
+          this.container.querySelector('.carousel-slide').classList.remove('loading');
         } else {
-          this.image.src = currentItem.image;
+          // Image not preloaded, load it properly before updating text
+          const tempImg = new Image();
+          
+          // Show loading state
+          this.textElement.textContent = "Loading...";
+          this.textElement.classList.add('loading');
+          this.container.querySelector('.carousel-slide').classList.add('loading');
+          
+          tempImg.onload = () => {
+            // Only update if this is still the current slide (user hasn't clicked away)
+            if (this.data[this.currentSlide] === currentItem) {
+              this.image.src = tempImg.src;
+              this.image.alt = currentItem.description;
+              this.textElement.textContent = currentItem.description;
+              this.textElement.classList.remove('loading');
+              this.container.querySelector('.carousel-slide').classList.remove('loading');
+              // Cache the loaded image for future use
+              this.preloadedImages.set(currentItem.image, tempImg);
+            }
+          };
+          
+          tempImg.onerror = () => {
+            // Only update if this is still the current slide
+            if (this.data[this.currentSlide] === currentItem) {
+              this.textElement.textContent = "Failed to load image";
+              this.textElement.classList.remove('loading');
+              this.container.querySelector('.carousel-slide').classList.remove('loading');
+              console.warn(`Failed to load image: ${currentItem.image}`);
+            }
+          };
+          
+          tempImg.src = currentItem.image;
         }
-        
-        this.image.alt = currentItem.description;
-        this.textElement.textContent = currentItem.description;
       }
       
       nextSlide() {
