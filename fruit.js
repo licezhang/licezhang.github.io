@@ -44,7 +44,7 @@ class FruitSystem {
             ],
             purple: [
                 { name: 'grape', path: 'assets/fruit/grape.svg' },
-                //{ name: 'mangosteen', path: 'assets/fruit/mangosteen.svg' }
+                { name: 'plum', path: 'assets/fruit/plum.svg' }
             ],
             blue: [
                 { name: 'blueberry', path: 'assets/fruit/blueberry.svg' },
