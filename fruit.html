@@ -1,189 +1,366 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Falling fruits — clean & simple</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
     :root { --ui-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; }
-    html,body { height:100%; margin:0; font-family: var(--ui-font); }
-    /* Fullscreen canvas for Matter renderer. pointer-events:none so page text remains interactive. */
-    #stage { position:fixed; left:0; top:0; width:100%; height:100%; pointer-events:none; display:block; }
-    .content { padding:36px; max-width:900px; margin:0 auto; line-height:1.7; position:relative; z-index:1; }
-    .fruit-word {
-      color:#1a73e8;
-      cursor:pointer;
-      text-decoration:underline;
-      pointer-events:auto; /* words should receive clicks even though canvas covers page */
-    }
+    html, body { height: 100%; margin: 0; font-family: var(--ui-font); }
+    #stage { position: fixed; inset: 0; pointer-events: none; display: block; z-index: 25; }
+    .content { padding: 36px; max-width: 900px; margin: 0 auto; line-height: 1.7; position: relative; z-index: 20 }
+    .fruit-word { color: #1a73e8; cursor: pointer; text-decoration: underline; position: relative; z-index: 30; pointer-events: auto; }
   </style>
 </head>
 <body>
   <canvas id="stage"></canvas>
-
   <div class="content">
     <h1>Click a word to spawn fruit!</h1>
     <p>
       Click any of these: 
-      <span class="fruit-word" data-fruit="apple">apple</span>,
-      <span class="fruit-word" data-fruit="orange">orange</span>,
-      <span class="fruit-word" data-fruit="pear">pear</span>,
-      <span class="fruit-word" data-fruit="banana">banana</span>.
+      <span class="fruit-word" data-color="red">red</span>,
+      <span class="fruit-word" data-color="pink">pink</span>,
+      <span class="fruit-word" data-color="orange">orange</span>,
+      <span class="fruit-word" data-color="green">green</span>,
+      <span class="fruit-word" data-color="purple">purple</span>,
+      <span class="fruit-word" data-color="blue">blue</span>.
       Fruits fall from the top and remain on the page until you refresh or leave.
     </p>
     <p>Rapid clicking is supported — each click creates a new physics body.</p>
   </div>
 
-  <!-- Matter.js -->
+  <script src="https://cdn.jsdelivr.net/npm/pathseg@1.2.1/pathseg.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-
+  <script src="decomp.js" type="text/javascript"></script>
+  <script src="svg_demo.js" type="text/javascript"></script>
   <script>
-  (function () {
-    // Matter aliases for convenience
-    const { Engine, Render, Runner, Bodies, Body, Composite } = Matter;
+  (() => {
+    const { Engine, Render, Runner, Bodies, Body, Composite, Common, Vertices, Svg, Mouse, MouseConstraint } = Matter;
 
-    // ----------------------
-    // Engine & renderer
-    // ----------------------
-    // enableSleeping: true (original/simple behavior)
+    Common.setDecomp(decomp);
+    // Physics setup
     const engine = Engine.create();
-    engine.world.gravity.y = 1.1; // gravity strength (tweak to taste)
+    engine.world.gravity.y = 0.8;
+    
     const canvas = document.getElementById('stage');
-
-    // Create the renderer (full-screen canvas). We keep one Render instance.
     const render = Render.create({
-      canvas: canvas,
-      engine: engine,
+      canvas,
+      engine,
       options: {
-        width: window.innerWidth,
-        height: window.innerHeight,
+        width: innerWidth,
+        height: innerHeight,
         background: 'transparent',
         wireframes: false,
-        pixelRatio: window.devicePixelRatio || 1
+        pixelRatio: devicePixelRatio || 1
       }
     });
-    Render.run(render);
-
-    // Runner
-    const runner = Runner.create();
-    Runner.run(runner, engine);
-
-    // Invisible bounds (floor + left/right walls)
-    const worldBounds = Matter.Bounds.create([
-        { x: 0, y: 0 },
-        { x: window.innerWidth, y: 0 },
-        { x: window.innerWidth, y: window.innerHeight },
-        { x: 0, y: window.innerHeight }
-    ]);
-
-    const thickness = 200;
-    const { min, max } = worldBounds;
-
-    const floor = Bodies.rectangle(
-        (min.x + max.x) / 2, max.y + thickness / 2,
-        max.x - min.x + thickness * 2, thickness,
-        { isStatic: true, render: { visible: false } }
-    );
-
-    Composite.add(engine.world, floor);
     
-    // ----------------------
-    // Fruit definitions
-    // Keep these small and easy to tweak.
-    // ----------------------
-    const FRUITS = {
-      apple: {
-        type: 'circle',
-        radius: 20,
-        options: { density: 0.002, friction: 0.6, restitution: 0.1, render: { fillStyle: '#e53935' } }
-      },
-      orange: {
-        type: 'circle',
-        radius: 18,
-        options: { density: 0.002, friction: 0.55, restitution: 0.15, render: { fillStyle: '#fb8c00' } }
-      },
-      pear: {
-        type: 'polygon',
-        // simple vertex shape approximating a pear
-        vertices: [{x:-14,y:-18},{x:14,y:-18},{x:22,y:0},{x:8,y:24},{x:-8,y:24},{x:-22,y:0}],
-        options: { density: 0.002, friction: 0.6, restitution: 0.08, render: { fillStyle: '#8bc34a' } }
-      },
-      banana: {
-        type: 'polygon',
-        // convex-ish banana approximation
-        vertices: [{x:-26,y:-6},{x:-18,y:-14},{x:-6,y:-20},{x:6,y:-18},{x:18,y:-10},{x:22,y:0},{x:12,y:8},{x:-6,y:12},{x:-20,y:8}],
-        options: { density: 0.0018, friction: 0.5, restitution: 0.12, render: { fillStyle: '#ffeb3b' } }
-      }
+    Render.run(render);
+    Runner.run(Runner.create(), engine);
+
+    var select = function(root, selector) {
+        return Array.prototype.slice.call(root.querySelectorAll(selector));
     };
 
-    let nextId = 1; // unique id for labeling bodies
-    function createFruitBody(kind) {
-      const spec = FRUITS[kind]
-      let body;
+    var loadSvg = function(url) {
+        return fetch(url)
+            .then(function(response) { return response.text(); })
+            .then(function(raw) { return (new window.DOMParser()).parseFromString(raw, 'image/svg+xml'); });
+    };
 
-      if (spec.type === 'circle') {
-        body = Bodies.circle(-100, -100, spec.radius, Object.assign({}, spec.options));
-      } else if (spec.type === 'polygon') {
-        // Matter.fromVertices will attempt to create a compound if needed
-        const verts = spec.vertices.map(v => ({ x: v.x, y: v.y }));
-        body = Bodies.fromVertices(-100, -100, verts, Object.assign({}, spec.options), true);
-        // fallback to rectangle if fromVertices fails
-        if (!body) {
-          body = Bodies.rectangle(-100, -100, 40, 40, Object.assign({}, spec.options));
+    // Store loaded SVG vertices for each fruit type
+    const fruitVertices = {};
+    let svgsLoaded = 0;
+
+    // Color-based fruit configurations - all fruits in same group get same color
+    const colorDefinitions = {
+        red: '#e53935',
+        pink: '#DA356E', 
+        orange: '#F5840C',
+        green: '#7D8921',
+        purple: '#9C3BCC',
+        blue: '#6B6BE2'
+    };
+
+    const colorConfigs = {
+        red: [
+            { name: 'apple', path: 'assets/fruit/apple.svg' },
+            { name: 'cherry', path: 'assets/fruit/cherry.svg' }
+        ],
+        pink: [
+            { name: 'pomegranate', path: 'assets/fruit/pomegranate.svg' },
+            { name: 'dragonfruit', path: 'assets/fruit/dragonfruit.svg' }
+        ],
+        orange: [
+            { name: 'orange', path: 'assets/fruit/orange.svg' },
+            { name: 'pumpkin', path: 'assets/fruit/pumpkin.svg' }
+        ],
+        green: [
+            { name: 'pear', path: 'assets/fruit/pear.svg' },
+            { name: 'lime', path: 'assets/fruit/lime.svg' }
+        ],
+        purple: [
+            { name: 'grape', path: 'assets/fruit/grape.svg' },
+            { name: 'mangosteen', path: 'assets/fruit/mangosteen.svg' }
+        ],
+        blue: [
+            { name: 'blueberry', path: 'assets/fruit/blueberry.svg' },
+            { name: 'blackberry', path: 'assets/fruit/blackberry.svg' }
+        ]
+    };
+
+    // Flatten all fruit configs for loading, adding color from group
+    const allFruits = [];
+    Object.entries(colorConfigs).forEach(([colorName, fruits]) => {
+        fruits.forEach(fruit => {
+            allFruits.push({
+                ...fruit,
+                color: colorDefinitions[colorName]
+            });
+        });
+    });
+
+    const totalSvgs = allFruits.length;
+
+    // Create fruits object from all configs
+    const fruits = {};
+    allFruits.forEach(function(config) {
+        fruits[config.name] = {
+            vertices: null,
+            color: config.color,
+            density: 1
+        };
+    });
+
+    allFruits.forEach(function(config) {
+        loadSvg(config.path).then(function(root) {
+            const vertexSets = select(root, 'path')
+                .map(function(path) { 
+                    return Vertices.scale(Svg.pathToVertices(path, 1), 2.5, 2.5); 
+                });
+
+            fruitVertices[config.name] = vertexSets;
+            svgsLoaded++;
+            
+            // Update the fruit definition with loaded vertices and color
+            if (fruits[config.name]) {
+                fruits[config.name].vertices = vertexSets;
+                fruits[config.name].color = config.color;
+            }
+            
+        }).catch(function(error) {
+            svgsLoaded++;
+        });
+    });
+
+    // World boundaries
+    let walls = [];
+    
+    function createWalls() {
+      const thickness = 200;
+      walls.forEach(wall => Composite.remove(engine.world, wall));
+      walls = [
+        // Bottom wall
+        Bodies.rectangle(innerWidth/2, innerHeight + thickness/2, innerWidth + thickness*2, thickness, { isStatic: true }),
+        // Left wall
+        Bodies.rectangle(-thickness/2, innerHeight/2, thickness, innerHeight + thickness*2, { isStatic: true }),
+        // Right wall
+        Bodies.rectangle(innerWidth + thickness/2, innerHeight/2, thickness, innerHeight + thickness*2, { isStatic: true }),
+        // Top wall
+        Bodies.rectangle(innerWidth/2, -thickness/2, innerWidth + thickness*2, thickness, { isStatic: true })
+      ];
+      walls.forEach(wall => {
+        wall.render.visible = false;
+        wall.friction = 1.0;
+      });
+      Composite.add(engine.world, walls);
+    }
+    
+    createWalls();
+
+    // add mouse control
+    var mouse = Mouse.create(render.canvas),
+        mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: {
+                stiffness: 0.1,
+                render: {
+                    visible: false
+                }
+            }
+        });
+
+    Composite.add(engine.world, mouseConstraint);
+
+    // Smart pointer event management for selective canvas interaction
+    let isMouseOverFruit = false;
+    let mouseMoveHandler;
+    
+    // Check if mouse position is over any fruit body
+    function checkMouseOverFruit(x, y) {
+        const bodies = Composite.allBodies(engine.world);
+        for (let body of bodies) {
+            if (body.label.includes('fruit')) {
+                // More generous bounds check with some padding
+                const padding = 15;
+                if (x >= body.bounds.min.x - padding && x <= body.bounds.max.x + padding &&
+                    y >= body.bounds.min.y - padding && y <= body.bounds.max.y + padding) {
+                    return true;
+                }
+            }
         }
-      } else {
-        body = Bodies.circle(-100, -100, 20, Object.assign({}, spec.options));
+        return false;
+    }
+    
+    // Use document-level mouse tracking since canvas might have pointer-events: none
+    mouseMoveHandler = (event) => {
+        // Get canvas position
+        const rect = render.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+        
+        // Check if mouse is within canvas bounds
+        if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
+            const wasOverFruit = isMouseOverFruit;
+            isMouseOverFruit = checkMouseOverFruit(mouseX, mouseY);
+            
+            // Only change pointer events if state changed
+            if (isMouseOverFruit !== wasOverFruit) {
+                render.canvas.style.pointerEvents = isMouseOverFruit ? 'auto' : 'none';
+            }
+        }
+    };
+    
+    // Use document-level event listener
+    document.addEventListener('mousemove', mouseMoveHandler);
+    
+    // Ensure canvas starts with pointer events disabled
+    render.canvas.style.pointerEvents = 'none';
+
+    // Comprehensive mouse release safeguards to prevent fruits from getting stuck
+    function forceMouseRelease() {
+        if (mouseConstraint.constraint.bodyB) {
+            const body = mouseConstraint.constraint.bodyB;
+            
+            // Smooth out velocity to prevent rebound effects
+            if (body.velocity) {
+                // Reduce velocity slightly to prevent excessive momentum
+                body.velocity.x *= 0.8;
+                body.velocity.y *= 0.8;
+                
+                // Cap maximum velocity to prevent wild movements
+                const maxVelocity = 15;
+                const currentSpeed = Math.sqrt(body.velocity.x * body.velocity.x + body.velocity.y * body.velocity.y);
+                if (currentSpeed > maxVelocity) {
+                    const ratio = maxVelocity / currentSpeed;
+                    body.velocity.x *= ratio;
+                    body.velocity.y *= ratio;
+                }
+            }
+            
+            // Clear the constraint
+            mouseConstraint.constraint.bodyB = null;
+            mouseConstraint.constraint.bodyA = null;
+            mouseConstraint.constraint.pointA = null;
+            mouseConstraint.constraint.pointB = null;
+        }
+    }
+    
+    // Release on various events
+    document.addEventListener('mouseup', forceMouseRelease);
+    document.addEventListener('mouseleave', forceMouseRelease);
+    window.addEventListener('blur', forceMouseRelease);
+    
+    // Release when mouse leaves the canvas area
+    render.canvas.addEventListener('mouseleave', forceMouseRelease);
+    
+    // Prevent accidental dragging - only allow dragging when mouse is actually pressed
+    let isMousePressed = false;
+    
+    document.addEventListener('mousedown', () => {
+        isMousePressed = true;
+    });
+    
+    document.addEventListener('mouseup', () => {
+        isMousePressed = false;
+    });
+    
+    // Override mouse constraint to only work when mouse is actually pressed
+    const originalMouseConstraintUpdate = mouseConstraint.update;
+    mouseConstraint.update = function() {
+        if (isMousePressed) {
+            originalMouseConstraintUpdate.call(this);
+        } else {
+            // Force release if mouse not pressed
+            if (this.constraint.bodyB) {
+                forceMouseRelease();
+            }
+        }
+    };
+
+    // Fruit creation
+    let fruitId = 1;
+    
+    function spawnFruitByColor(color, x = innerWidth/2) {
+      const colorFruits = colorConfigs[color];
+      if (!colorFruits || colorFruits.length === 0) {
+        return;
       }
+      
+      // Pick a random fruit from this color group
+      const randomFruit = colorFruits[Math.floor(Math.random() * colorFruits.length)];
+      spawnFruit(randomFruit.name, x);
+    }
+    
+    function spawnFruit(type, x = innerWidth/2) {
+        const spec = fruits[type];
 
-      body.label = `fruit-${kind}-${nextId++}`;
-      body.customKind = kind;
-      body.render.strokeStyle = '#333';
-      body.render.lineWidth = 1;
-      // mark so we can identify fruit bodies later if needed
-      body.isFruit = true;
-      return body;
+        const options = {
+            density: spec.density,
+            friction: 0.2,
+            restitution: 0.1,
+            render: { fillStyle: spec.color }
+        };
+
+        // Safe spawn position - well below the top wall (y=0) and within screen bounds
+        const spawnX = Math.max(50, Math.min(innerWidth - 50, x + (Math.random() - 0.5) * 60));
+        const spawnY = Math.max(50, 20 + Math.random() * 100); // Spawn between y=50 and y=150
+
+        const body = Bodies.fromVertices(spawnX, spawnY, spec.vertices, options);
+
+        // Safe velocities - small horizontal, downward or neutral vertical
+        Body.setVelocity(body, { 
+            x: (Math.random() - 0.5) * 2, // Small horizontal velocity (-1 to +1)
+            y: Math.random() * 1 // Small downward velocity (0 to +1)
+        });
+        Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.3); // Gentle rotation
+        
+        body.label = `fruit-${type}-${fruitId++}`;
+        Composite.add(engine.world, body);
+        console.log('Spawned body:', body);
     }
 
-    function spawnFruit(kind, screenX) {
-      const body = createFruitBody(kind);
-
-      // place above the top of the viewport with a small random offset
-      const spawnX = Math.max(20, Math.min(window.innerWidth - 20, screenX + (Math.random() - 0.5) * 40));
-      const spawnY = -40 - Math.random() * 60;
-      Body.setPosition(body, { x: spawnX, y: spawnY });
-
-      // small lateral velocity + angular velocity
-      Body.setVelocity(body, { x: (Math.random() - 0.5) * 3, y: 0});
-      Body.setAngularVelocity(body, (Math.random() - 0.5) * 0.6);
-
-      // small random force nudge so newly created bodies don't perfectly overlap
-      const push = 0.0006 + Math.random() * 0.0006;
-      Body.applyForce(body, { x: spawnX, y: spawnY }, { x: (Math.random() - 0.5) * push, y: -push * 0.2 });
-
-      Composite.add(engine.world, body);
-      return body;
-    }
-
-    document.addEventListener('click', function (e) {
-        const el = e.target.closest('.fruit-word');
-        const kind = el.dataset.fruit || 'apple';
-        spawnFruit(kind, window.innerWidth / 2);
+    // Event listeners
+    document.querySelectorAll('.fruit-word').forEach(el => {
+      el.onclick = (e) => {
+        e.stopPropagation(); // Prevent canvas from handling this click
+        spawnFruitByColor(el.dataset.color);
+      };
     });
 
-
-    window.addEventListener('resize', () => { 
-        Matter.Bounds.update(worldBounds, [
-            { x: 0, y: 0 },
-            { x: window.innerWidth, y: 0 },
-            { x: window.innerWidth, y: window.innerHeight },
-            { x: 0, y: window.innerHeight }
-        ]);
-        const { min, max } = worldBounds;
-        Body.setPosition(floor, { x: (min.x + max.x) / 2, y: max.y + thickness / 2 });
-        Body.setPosition(leftWall, { x: min.x - thickness / 2, y: (min.y + max.y) / 2 });
-        Body.setPosition(rightWall, { x: max.x + thickness / 2, y: (min.y + max.y) / 2 });
+    addEventListener('resize', () => {
+      render.options.width = innerWidth;
+      render.options.height = innerHeight;
+      canvas.width = innerWidth * (devicePixelRatio || 1);
+      canvas.height = innerHeight * (devicePixelRatio || 1);
+      canvas.style.width = innerWidth + 'px';
+      canvas.style.height = innerHeight + 'px';
+      
+      // Update mouse constraint for new canvas size
+      mouse.element = canvas;
+      
+      createWalls();
     });
-
   })();
   </script>
 </body>

@@ -51,7 +51,7 @@ main {
     max-width: 790px;
     margin: 0 auto;
     padding: 0 30px;
-    margin-top: 120px; /* Reasonable margin below fixed header */
+    margin-top: 100px; /* Reasonable margin below fixed header */
     box-sizing: border-box;
 }
 
@@ -64,7 +64,7 @@ span{
     color: #F5840C;
 }
 .highlight2 {
-    color: #FC4A4A;
+    color: #e53935;
 }
 .highlight3 {
     color: #DA356E;
