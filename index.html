@@ -51,6 +51,15 @@
   </main>
   
   <script>
+    // Disable double-click text selection while keeping normal selection
+    document.addEventListener('DOMContentLoaded', () => {
+      document.addEventListener('mousedown', (event) => {
+        if (event.detail > 1) { // Multi-click detected
+          event.preventDefault();
+        }
+      });
+    });
+    
     // Initialize fruit system when page loads
     document.addEventListener('DOMContentLoaded', async () => {
       // Check if mobile device
