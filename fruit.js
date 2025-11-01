@@ -233,20 +233,18 @@ class FruitSystem {
         // Store reference for cleanup if needed
         this.mouseConstraint = mouseConstraint;
         
-        // Smart pointer events - handle both mouse and touch
+        // Smart pointer events - simple approach for mobile
         this.render.canvas.style.pointerEvents = 'none'; // Start disabled
         
-        const updateCanvasInteraction = (clientX, clientY, forceEnable = false) => {
+        const updateCanvasInteraction = (clientX, clientY) => {
             const rect = this.render.canvas.getBoundingClientRect();
             const x = clientX - rect.left;
             const y = clientY - rect.top;
             
             if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
                 const isOverFruit = this.checkMouseOverFruit(x, y);
-                this.render.canvas.style.pointerEvents = (isOverFruit || forceEnable) ? 'auto' : 'none';
-                return isOverFruit || forceEnable;
+                this.render.canvas.style.pointerEvents = isOverFruit ? 'auto' : 'none';
             }
-            return false;
         };
         
         // Mouse events for desktop
@@ -254,41 +252,16 @@ class FruitSystem {
             updateCanvasInteraction(event.clientX, event.clientY);
         });
         
-        // Touch events for mobile - more aggressive enabling
-        let touchInteracting = false;
-        
+        // For mobile: enable canvas interaction immediately on touch start if over fruit
         document.addEventListener('touchstart', (event) => {
             if (event.touches.length > 0) {
                 const touch = event.touches[0];
-                const isOverFruit = updateCanvasInteraction(touch.clientX, touch.clientY, true); // Force enable on touch start
-                if (isOverFruit) {
-                    touchInteracting = true;
-                    // Keep canvas interactive during the touch session
-                    this.render.canvas.style.pointerEvents = 'auto';
-                }
-            }
-        }, { passive: true });
-        
-        document.addEventListener('touchmove', (event) => {
-            if (event.touches.length > 0 && touchInteracting) {
-                // Keep canvas interactive while touch is active and we started over a fruit
-                this.render.canvas.style.pointerEvents = 'auto';
+                updateCanvasInteraction(touch.clientX, touch.clientY);
             }
         }, { passive: true });
         
         // Reset canvas interaction when touch ends
         document.addEventListener('touchend', () => {
-            touchInteracting = false;
-            // Small delay to ensure touch interaction completes before disabling
-            setTimeout(() => {
-                if (!touchInteracting) {
-                    this.render.canvas.style.pointerEvents = 'none';
-                }
-            }, 100);
-        }, { passive: true });
-        
-        document.addEventListener('touchcancel', () => {
-            touchInteracting = false;
             this.render.canvas.style.pointerEvents = 'none';
         }, { passive: true });
     }
@@ -299,7 +272,7 @@ class FruitSystem {
         
         for (let body of bodies) {
             if (body.label && body.label.includes('fruit')) {
-                const padding = 30; // Increased padding for better touch sensitivity
+                const padding = 20; // Reasonable padding for touch
                 if (x >= body.bounds.min.x - padding && x <= body.bounds.max.x + padding &&
                     y >= body.bounds.min.y - padding && y <= body.bounds.max.y + padding) {
                     return true;
