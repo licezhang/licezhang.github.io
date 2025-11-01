@@ -219,83 +219,43 @@ class FruitSystem {
     }
 
     setupMouseControl() {
-        const { Mouse, MouseConstraint, Composite, Body } = Matter;
+        const { Mouse, MouseConstraint, Composite } = Matter;
         
-        const mouse = Mouse.create(this.render.canvas);
-        this.mouseConstraint = MouseConstraint.create(this.engine, {
-            mouse: mouse,
-            constraint: {
-                stiffness: 0.1,
-                render: { visible: false }
-            }
-        });
-
-        Composite.add(this.engine.world, this.mouseConstraint);
-
-        // Mouse release safeguards
-        const forceMouseRelease = () => {
-            if (this.mouseConstraint.constraint.bodyB) {
-                const body = this.mouseConstraint.constraint.bodyB;
-                
-                if (body.velocity) {
-                    body.velocity.x *= 0.8;
-                    body.velocity.y *= 0.8;
-                    
-                    const maxVelocity = 15;
-                    const currentSpeed = Math.sqrt(body.velocity.x * body.velocity.x + body.velocity.y * body.velocity.y);
-                    if (currentSpeed > maxVelocity) {
-                        const ratio = maxVelocity / currentSpeed;
-                        body.velocity.x *= ratio;
-                        body.velocity.y *= ratio;
+        // add mouse control - exactly like Matter.js example
+        var mouse = Mouse.create(this.render.canvas),
+            mouseConstraint = MouseConstraint.create(this.engine, {
+                mouse: mouse,
+                constraint: {
+                    stiffness: 0.2,
+                    render: {
+                        visible: false
                     }
                 }
-                
-                this.mouseConstraint.constraint.bodyB = null;
-                this.mouseConstraint.constraint.bodyA = null;
-                this.mouseConstraint.constraint.pointA = null;
-                this.mouseConstraint.constraint.pointB = null;
-            }
-        };
+            });
 
-        // Mouse event handling
-        document.addEventListener('mousedown', () => this.isMousePressed = true);
-        document.addEventListener('mouseup', () => {
-            this.isMousePressed = false;
-            forceMouseRelease();
-        });
-        document.addEventListener('mouseleave', forceMouseRelease);
-        window.addEventListener('blur', forceMouseRelease);
-        this.render.canvas.addEventListener('mouseleave', forceMouseRelease);
+        Composite.add(this.engine.world, mouseConstraint);
 
-        // Smart pointer events
+        // keep the mouse in sync with rendering
+        this.render.mouse = mouse;
+        
+        // Store reference for cleanup if needed
+        this.mouseConstraint = mouseConstraint;
+        
+        // Smart pointer events - only enable canvas interaction when over fruit
+        this.render.canvas.style.pointerEvents = 'none'; // Start disabled
+        
         document.addEventListener('mousemove', (event) => {
             const rect = this.render.canvas.getBoundingClientRect();
             const mouseX = event.clientX - rect.left;
             const mouseY = event.clientY - rect.top;
             
             if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
-                const wasOverFruit = this.isMouseOverFruit;
-                this.isMouseOverFruit = this.checkMouseOverFruit(mouseX, mouseY);
-                
-                if (this.isMouseOverFruit !== wasOverFruit) {
-                    this.render.canvas.style.pointerEvents = this.isMouseOverFruit ? 'auto' : 'none';
-                }
+                const isOverFruit = this.checkMouseOverFruit(mouseX, mouseY);
+                this.render.canvas.style.pointerEvents = isOverFruit ? 'auto' : 'none';
             }
         });
-
-        // Override mouse constraint to only work when pressed
-        const originalUpdate = this.mouseConstraint.update;
-        this.mouseConstraint.update = function() {
-            if (this.isMousePressed) {
-                originalUpdate.call(this);
-            } else {
-                if (this.constraint.bodyB) {
-                    forceMouseRelease();
-                }
-            }
-        }.bind(this);
     }
-
+    
     checkMouseOverFruit(x, y) {
         const { Composite } = Matter;
         const bodies = Composite.allBodies(this.engine.world);

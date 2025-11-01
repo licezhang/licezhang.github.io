@@ -132,7 +132,7 @@ h1 {
 }
 
 /* Additional mobile/tablet coverage */
-@media (max-width: 768px) {
+@media (max-width: 500px) {
     /* Disable fruit words on tablets and larger mobile devices */
     .fruit-word {
         cursor: default !important;
