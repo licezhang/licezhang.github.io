@@ -62,30 +62,8 @@
     
     // Initialize fruit system when page loads
     document.addEventListener('DOMContentLoaded', async () => {
-      // Check if mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                       window.innerWidth <= 768;
-      
-      if (isMobile) {
-        console.log('Mobile device detected - fruit system disabled for better mobile experience');
-        // Add mobile class to body for additional CSS targeting
-        document.body.classList.add('mobile');
-        return;
-      }
-      
-      try {
-        const fruitSystem = new FruitSystem();
-        const initialized = await fruitSystem.init('fruit-canvas');
-        
-        if (initialized === false) {
-          console.log('Fruit system disabled for this browser');
-          return;
-        }
-        
-        console.log('Fruit system ready! Click on highlighted words to spawn fruits.');
-      } catch (error) {
-        console.warn('Fruit system failed to initialize:', error);
-      }
+      const fruitSystem = new FruitSystem();
+      const initialized = await fruitSystem.init('fruit-canvas');
     });
   </script>
 </body>

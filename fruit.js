@@ -67,14 +67,6 @@ class FruitSystem {
     }
 
     async init(canvasId = 'fruit-canvas') {
-        // Detect mobile devices and disable fruit system
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                         window.innerWidth <= 768;
-        if (isMobile) {
-            console.log('Mobile device detected - fruit system disabled for better mobile experience');
-            return false;
-        }
-        
         // Check if required libraries are loaded
         if (typeof Matter === 'undefined') {
             throw new Error('Matter.js is required');
@@ -241,19 +233,42 @@ class FruitSystem {
         // Store reference for cleanup if needed
         this.mouseConstraint = mouseConstraint;
         
-        // Smart pointer events - only enable canvas interaction when over fruit
+        // Smart pointer events - handle both mouse and touch
         this.render.canvas.style.pointerEvents = 'none'; // Start disabled
         
-        document.addEventListener('mousemove', (event) => {
+        const updateCanvasInteraction = (clientX, clientY) => {
             const rect = this.render.canvas.getBoundingClientRect();
-            const mouseX = event.clientX - rect.left;
-            const mouseY = event.clientY - rect.top;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
             
-            if (mouseX >= 0 && mouseX <= rect.width && mouseY >= 0 && mouseY <= rect.height) {
-                const isOverFruit = this.checkMouseOverFruit(mouseX, mouseY);
+            if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
+                const isOverFruit = this.checkMouseOverFruit(x, y);
                 this.render.canvas.style.pointerEvents = isOverFruit ? 'auto' : 'none';
             }
+        };
+        
+        // Mouse events for desktop
+        document.addEventListener('mousemove', (event) => {
+            updateCanvasInteraction(event.clientX, event.clientY);
         });
+        
+        // Touch events for mobile
+        document.addEventListener('touchmove', (event) => {
+            if (event.touches.length > 0) {
+                updateCanvasInteraction(event.touches[0].clientX, event.touches[0].clientY);
+            }
+        }, { passive: true });
+        
+        document.addEventListener('touchstart', (event) => {
+            if (event.touches.length > 0) {
+                updateCanvasInteraction(event.touches[0].clientX, event.touches[0].clientY);
+            }
+        }, { passive: true });
+        
+        // Reset canvas interaction when touch ends
+        document.addEventListener('touchend', () => {
+            this.render.canvas.style.pointerEvents = 'none';
+        }, { passive: true });
     }
     
     checkMouseOverFruit(x, y) {
