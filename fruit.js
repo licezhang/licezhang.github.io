@@ -67,6 +67,14 @@ class FruitSystem {
     }
 
     async init(canvasId = 'fruit-canvas') {
+        // Detect mobile devices and disable fruit system
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         window.innerWidth <= 768;
+        if (isMobile) {
+            console.log('Mobile device detected - fruit system disabled for better mobile experience');
+            return false;
+        }
+        
         // Check if required libraries are loaded
         if (typeof Matter === 'undefined') {
             throw new Error('Matter.js is required');
@@ -106,12 +114,22 @@ class FruitSystem {
                 height: window.innerHeight,
                 background: 'transparent',
                 wireframes: false,
-                pixelRatio: window.devicePixelRatio || 1
+                pixelRatio: window.devicePixelRatio || 1,
+                showAngleIndicator: false,
+                showVelocity: false,
+                enableSleeping: false
             }
         });
         
         Render.run(this.render);
         Runner.run(Runner.create(), this.engine);
+
+        // Fix canvas rendering for smooth lines on Safari/Firefox
+        const ctx = this.canvas.getContext('2d');
+        if (ctx) {
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+        }
 
         // Create fruits object from all configs
         this.allFruits.forEach(config => {
@@ -345,7 +363,11 @@ class FruitSystem {
             density: spec.density,
             friction: 0.2,
             restitution: 0.1,
-            render: { fillStyle: spec.color }
+            render: { 
+                fillStyle: spec.color,
+                strokeStyle: spec.color,
+                lineWidth: 1
+            }
         };
 
         const spawnX = Math.max(50, Math.min(window.innerWidth - 50, x + (Math.random() - 0.5) * 60));

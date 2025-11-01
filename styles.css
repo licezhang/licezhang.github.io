@@ -118,5 +118,49 @@ h1 {
     h1 {
         font-size: 1.5rem;
     }
+    
+    /* Disable fruit word styling on mobile */
+    .fruit-word {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+    
+    /* Hide the canvas on mobile */
+    #stage {
+        display: none !important;
+    }
+}
+
+/* Additional mobile/tablet coverage */
+@media (max-width: 768px) {
+    /* Disable fruit words on tablets and larger mobile devices */
+    .fruit-word {
+        cursor: default !important;
+        pointer-events: none !important;
+    }
+    
+    /* Hide canvas on tablets */
+    #stage {
+        display: none !important;
+    }
+    
+    /* Ensure scrolling is enabled */
+    body {
+        overflow: auto !important;
+    }
+}
+
+/* Mobile class targeting for JavaScript-detected mobile devices */
+.mobile .fruit-word {
+    cursor: default !important;
+    pointer-events: none !important;
+}
+
+.mobile #stage {
+    display: none !important;
+}
+
+.mobile body {
+    overflow: auto !important;
 }
 
