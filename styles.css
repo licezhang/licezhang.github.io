@@ -131,24 +131,6 @@ h1 {
     }
 }
 
-/* Additional mobile/tablet coverage */
-@media (max-width: 500px) {
-    /* Disable fruit words on tablets and larger mobile devices */
-    .fruit-word {
-        cursor: default !important;
-        pointer-events: none !important;
-    }
-    
-    /* Hide canvas on tablets */
-    #stage {
-        display: none !important;
-    }
-    
-    /* Ensure scrolling is enabled */
-    body {
-        overflow: auto !important;
-    }
-}
 
 /* Mobile class targeting for JavaScript-detected mobile devices */
 .mobile .fruit-word {
