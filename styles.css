@@ -118,17 +118,6 @@ h1 {
     h1 {
         font-size: 1.5rem;
     }
-    
-    /* Disable fruit word styling on mobile */
-    .fruit-word {
-        cursor: default !important;
-        pointer-events: none !important;
-    }
-    
-    /* Hide the canvas on mobile */
-    #stage {
-        display: none !important;
-    }
 }
 
 
