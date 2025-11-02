@@ -1,9 +1,10 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Avenir Light', sans-serif;
+    font-family: 'Karla', sans-serif;
+    font-weight: 350;
     background-color: #f7f7f7; /* light beige */
-    color: #757575;
+    color: #5b5c4e;
     height: 100%;
     overflow: hidden;
 }
@@ -13,7 +14,8 @@ header {
     align-items: center;
     justify-content: space-between;
     font-size: 1.2rem;
-    font-family: 'Avenir bold', sans-serif;
+    /*font-family: 'Avenir bold', sans-serif;*/
+    font-weight: 500;
     position: fixed;
     top: 0;
     left: 0;
@@ -26,7 +28,18 @@ header {
 .email-icon {
     margin-bottom:5px;
     width:23px;
+    height:23px;
     vertical-align:middle;
+    background-image: url('assets/img/email.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: all 0.2s ease;
+    display: inline-block;
+}
+
+.email-icon:hover {
+    background-image: url('assets/img/email-hover.png');
 }
 
 .link {
@@ -39,12 +52,12 @@ nav a {
 }
 
 a {
-    color: #4f504b;
+    color: #5b5c4e;
     text-decoration: none;
 }
 
 a:hover {
-    color: #757575;
+    color: #9C3BCC;
 }
 
 main {
@@ -57,7 +70,8 @@ main {
 
 span{
     font-size: 1.05rem;
-    font-family: "Averia Sans Libre", sans-serif;
+    font-weight: 500;
+    /* font-family: "Averia Sans Libre", sans-serif; */
 }
 
 .highlight1 {
@@ -84,10 +98,11 @@ span{
 
 h1 {
     font-size: 1.7rem;
+    font-weight: 500;
     text-align: center;
     margin-top: 50px;
     margin-bottom:0px;
-    color: #5b5c4e;
+    /*color: #5b5c4e;*/
 }
 
 .fruit-word {
