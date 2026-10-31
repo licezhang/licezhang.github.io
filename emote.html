@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>POV Emoji</title>
+<title>Send an emoji to the lightstick</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/mqtt@5.3.4/dist/mqtt.min.js"></script>
 <style>
@@ -27,7 +27,7 @@ h1{margin:0 0 12px;font:900 26px Orbitron,Tahoma,sans-serif;
 background:linear-gradient(#fff 0,#7fe9ff 45%,#ff2bd6 55%,#7a1d9e);-webkit-background-clip:text;background-clip:text;color:transparent;
 -webkit-text-stroke:1px #14123a;filter:drop-shadow(2px 2px 0 rgba(20,18,58,.5))}
 .bevel{cursor:pointer;background:linear-gradient(#fff,#c9d3df);border:2px solid #fff;border-right-color:#6b7685;border-bottom-color:#6b7685}
-.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:8px;font-weight:700}
+.pager{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;margin-bottom:8px;font-weight:700}
 .pager button{width:36px;height:30px;font:700 18px/1 Tahoma,sans-serif;color:var(--ink)}
 .pager button:active{border-color:#6b7685 #fff #fff #6b7685}
 .inset{background:#fff;border:2px solid #6b7685;border-right-color:#fff;border-bottom-color:#fff;padding:8px}
@@ -35,9 +35,9 @@ background:linear-gradient(#fff 0,#7fe9ff 45%,#ff2bd6 55%,#7a1d9e);-webkit-backg
 .grid button{font:24px/1 "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;padding:5px 0}
 .grid button:hover{background:linear-gradient(#e9fdff,#8fe9ff)}
 .grid button[aria-pressed=true]{border-color:#6b7685 #fff #fff #6b7685;background:#9ff6ff}
-.stage{display:flex;gap:12px;align-items:center;margin:12px 0}
+.stage{display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;margin:14px 0;text-align:center}
 canvas{width:100%;max-width:240px;aspect-ratio:1;image-rendering:pixelated;background:#000;border:2px solid #6b7685;border-right-color:#fff;border-bottom-color:#fff}
-.stage p{margin:0;flex:1}
+.stage p{margin:0;text-align:center;font-size:12px}
 #beam{display:block;width:100%;padding:14px;cursor:pointer;color:#fff;text-shadow:0 1px 2px #004a80;
 font:900 20px Orbitron,Tahoma,sans-serif;letter-spacing:2px;border-radius:999px;border:2px solid #005a99;
 background:linear-gradient(#a8f7ff,#18bbff 50%,#0086d9 51%,#3fe0ff);
@@ -53,18 +53,18 @@ box-shadow:inset 0 2px 0 rgba(255,255,255,.85),0 4px 14px rgba(0,150,255,.7)}
 </head>
 <body>
 <main class="win">
-  <div class="bar"><span>POV_EMOJI.EXE</span><b aria-hidden="true">x</b></div>
+  <div class="bar"><span>emote.exe</span><b aria-hidden="true">x</b></div>
   <div class="body">
-    <h1>POV Emoji</h1>
+    <h1>Send an emoji to the lightstick:</h1>
+    <div class="inset"><div class="grid" id="grid"></div></div>
     <div class="pager">
       <button id="prev" class="bevel" type="button" aria-label="Previous page">‹</button>
       <span id="pnum" aria-live="polite"></span>
       <button id="next" class="bevel" type="button" aria-label="Next page">›</button>
     </div>
-    <div class="inset"><div class="grid" id="grid"></div></div>
     <div class="stage">
       <canvas id="preview" width="320" height="320" aria-label="LED preview of the chosen emoji"></canvas>
-      <p id="hint">Pick an emoji.</p>
+      <p id="hint">LED lightstick preview — select an emoji above.</p>
     </div>
     <button id="beam" disabled>BEAM IT!</button>
     <div class="status"><span class="led" id="led"></span><span id="status">Connecting…</span></div>
@@ -76,13 +76,13 @@ const TOPIC = 'CHANGE-ME-8f3k2xq/emoji';
 const COLS = 40, ROWS = 40, COOLDOWN_MS = 5000;
 
 const PAGES = [
-  '😀 😎 🥳 😍 🤪 😜 🥰 😇 🤩 😴 🤓 😭 😡 🥺 🤡 👻 💀 👽 👾 🤖 😈 🙈 🙉 🙊',
-  '🐱 🐶 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐸 🐵 🐧 🐤 🦄 🐝 🦋 🐢 🐙 🐬 🐳 🦖 🐞 🐌 🦉',
-  '🍕 🍔 🍟 🌭 🍩 🍪 🎂 🍰 🍦 🍭 🍫 🍓 🍒 🍉 🍑 🍌 🍍 🥑 🍎 🍿 🍣 🍜 🥐 🍋',
-  '💖 💗 💓 💕 💘 💝 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 ✨ ⭐ 🌟 💫 🔮 🎀 💋 💎 👑 🌈',
-  '🌙 ☀️ 🪐 🚀 🛸 🌍 ☁️ ⚡ 🔥 ❄️ 🌊 🌠 🌸 🌺 🌻 🌷 🌴 🍀 🍄 🌵 🌋 ⛄ 🍁 🦠',
-  '💿 📼 ☎️ 📟 💾 📀 🕹️ 🎮 🎧 🎤 🎸 🎹 📷 📺 📻 💻 🖱️ ⌚ 🔋 🎁 🎈 🎉 🎊 🛼'
-].map(s => s.split(' '));
+  '😀 😎 🥳 😍 🤪 😜 🥰 😇 🤩 😴 🤓 😭 😡 🥺 🤡 👻 💀 👽 👾 🤖 😈 🙈 🙉 🙊 😂 🤣 😊 🙂 🙃 😉 😋 😛 😝 🫠 🥹 😍 😘 😗 😚 😙 😌 😔 😪 🤤 😷 🤒 🤕 🤑 😤',
+  '🐱 🐶 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐸 🐵 🐧 🐤 🦄 🐝 🦋 🐢 🐙 🐬 🐳 🦖 🐞 🐌 🦉 🐺 🐮 🐷 🐭 🐹 🐻‍❄️ 🦓 🦒 🐘 🦏 🦛 🐊 🐍 🦎 🦀 🦞 🦐 🦑 🐠 🐟 🦈 🦭 🦦 🦥',
+  '🍕 🍔 🍟 🌭 🍩 🍪 🎂 🍰 🍦 🍭 🍫 🍓 🍒 🍉 🍑 🍌 🍍 🥑 🍎 🍿 🍣 🍜 🥐 🍋 🍇 🍊 🍐 🥝 🫐 🥥 🍅 🥕 🌽 🥦 🥒 🥨 🧀 🥞 🧇 🥓 🍳 🥪 🌮 🌯 🍝 🍛 🍚 🍱 🧁',
+  '💖 💗 💓 💕 💘 💝 ❤️ 🧡 💛 💚 💙 💜 🖤 🤍 ✨ ⭐ 🌟 💫 🔮 🎀 💋 💎 👑 🌈 🩷 🩵 🩶 🤎 💔 ❣️ 💞 💟 💌 🫶 💐 🌹 🪷 🪻 🌼 🏵️ 🎇 🎆 🎊 🎉 🪩 🎁 🧸 🪄',
+  '🌙 ☀️ 🪐 🚀 🛸 🌍 ☁️ ⚡ 🔥 ❄️ 🌊 🌠 🌸 🌺 🌻 🌷 🌴 🍀 🍄 🌵 🌋 ⛄ 🍁 🦠 🌎 🌏 🌕 🌑 🌞 🌝 🌛 🌜 🌤️ ⛅ 🌧️ ⛈️ 🌪️ 🌫️ 🌬️ 🌈 🌂 ☂️ 🌱 🌿 🌲 🌳 🌾 🍂 🍃',
+  '💿 📼 ☎️ 📟 💾 📀 🕹️ 🎮 🎧 🎤 🎸 🎹 📷 📺 📻 💻 🖱️ ⌚ 🔋 🎁 🎈 🎉 🎊 🛼 📱 💡 🔦 🕯️ 📸 🎥 🎬 📹 📽️ 🎙️ 🎚️ 🎛️ 📡 🔌 🖥️ ⌨️ 🖨️ 💽 💰 🪙 🧩 🎲 🎯 🏆 🥇'
+].map(s => [...new Set(s.split(' '))].slice(0, 48));
 
 const $ = id => document.getElementById(id);
 const grid = $('grid'), beam = $('beam');
@@ -139,7 +139,7 @@ function choose(e) {
     pctx.fillStyle = `rgb(${d[i]},${d[i + 1]},${d[i + 2]})`;
     pctx.beginPath(); pctx.arc((x + .5) * cell, (y + .5) * cell, cell * .42, 0, 6.2832); pctx.fill();
   }
-  $('hint').textContent = 'Selected: ' + e;
+  $('hint').textContent = 'Lightstick preview — selected: ' + e;
   refresh();
 }
 
