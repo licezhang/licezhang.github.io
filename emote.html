@@ -128,17 +128,7 @@ function choose(e) {
   if (x1 < 0) { x0 = 0; y0 = 0; x1 = 255; y1 = 255; }
   wctx.fillStyle = '#000'; wctx.fillRect(0, 0, COLS, ROWS);
   wctx.imageSmoothingEnabled = true; wctx.imageSmoothingQuality = 'high';
-  const sourceW = x1 - x0 + 1;
-  const sourceH = y1 - y0 + 1;
-
-  const scale = Math.min(COLS / sourceW, ROWS / sourceH);
-  const destW = sourceW * scale;
-  const destH = sourceH * scale;
-
-  wctx.drawImage(
-    big, x0, y0, sourceW, sourceH,
-    (COLS - destW) / 2, 0, destW, destH
-  );  
+  wctx.drawImage(big, x0, y0, x1 - x0 + 1, y1 - y0 + 1, 0, 0, COLS, ROWS);
   const d = wctx.getImageData(0, 0, COLS, ROWS).data;
   rgbOut = new Uint8Array(COLS * ROWS * 3);       // column-major, gamma-corrected for LEDs
   pctx.fillStyle = '#000'; pctx.fillRect(0, 0, 320, 320);
