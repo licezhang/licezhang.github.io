@@ -88,6 +88,8 @@ const $ = id => document.getElementById(id);
 const grid = $('grid'), custom = $('custom'), beam = $('beam');
 const work = document.createElement('canvas'); work.width = COLS; work.height = ROWS;
 const wctx = work.getContext('2d', {willReadFrequently: true});
+const big = document.createElement('canvas'); big.width = big.height = 256;
+const bctx = big.getContext('2d', {willReadFrequently: true});
 const pctx = $('preview').getContext('2d');
 let chosen = '', nextAllowed = 0, online = false, rgbOut = null;
 
@@ -108,11 +110,22 @@ function choose(e, fromInput) {
   chosen = e;
   if (!fromInput) custom.value = '';
   [...grid.children].forEach(b => b.setAttribute('aria-pressed', String(b.textContent === e)));
+  // Draw large, find the emoji's visible bounds, then stretch just that area over the whole grid.
+  bctx.clearRect(0, 0, 256, 256);
+  bctx.font = '180px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  bctx.textAlign = 'center'; bctx.textBaseline = 'middle';
+  bctx.fillText(e, 128, 135);
+  const bd = bctx.getImageData(0, 0, 256, 256).data;
+  let x0 = 256, y0 = 256, x1 = -1, y1 = -1;
+  for (let y = 0; y < 256; y++) for (let x = 0; x < 256; x++)
+    if (bd[(y * 256 + x) * 4 + 3] > 24) {
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+  if (x1 < 0) { x0 = 0; y0 = 0; x1 = 255; y1 = 255; }
   wctx.fillStyle = '#000'; wctx.fillRect(0, 0, COLS, ROWS);
-  const size = Math.min(COLS, ROWS);
-  wctx.font = `${size * 0.8}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
-  wctx.textAlign = 'center'; wctx.textBaseline = 'middle';
-  wctx.fillText(e, COLS / 2, ROWS / 2 + size * 0.05);
+  wctx.imageSmoothingEnabled = true; wctx.imageSmoothingQuality = 'high';
+  wctx.drawImage(big, x0, y0, x1 - x0 + 1, y1 - y0 + 1, 0, 0, COLS, ROWS);
   const d = wctx.getImageData(0, 0, COLS, ROWS).data;
   rgbOut = new Uint8Array(COLS * ROWS * 3);       // column-major, gamma-corrected for LEDs
   pctx.fillStyle = '#000'; pctx.fillRect(0, 0, 320, 320);
