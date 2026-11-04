@@ -198,6 +198,26 @@ client.on('message', (topic, payload, packet) => {
 client.on('close', () => { online = false; stickOnline = false; lastHeartbeat = 0; updateConnectionStatus(); });
 client.on('error', err => console.error('MQTT error:', err));
 setInterval(updateConnectionStatus, 1000);
+// Re-check the lightstick without a page refresh.
+function pingStick(showChecking) {
+  if (!client.connected) return;
+  if (showChecking) checkingUntil = Date.now() + 4000;
+  client.publish(PING_TOPIC, 'ping');
+  updateConnectionStatus();
+}
+setInterval(() => {                                   // quietly keep asking while not connected
+  if (client.connected && !stickOnline) pingStick(false);
+}, 8000);
+function wake() {                                     // tab/phone woke up: reconnect and re-check
+  if (!client.connected) client.reconnect();
+  pingStick(true);
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) wake(); });
+window.addEventListener('focus', wake);
+window.addEventListener('online', wake);
+$('status').parentElement.style.cursor = 'pointer';   // click the status line to re-check now
+$('status').parentElement.title = 'Click to re-check';
+$('status').parentElement.onclick = () => pingStick(true);
 function setStatus(on, msg) { $('led').classList.toggle('on', on); $('status').textContent = msg; }
 
 function refresh() {
